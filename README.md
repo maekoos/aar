@@ -42,4 +42,4 @@ A simple summary of the most important files and folders.
 - [Android documentation: Dalvik bytecode](https://source.android.com/devices/tech/dalvik/dalvik-bytecode)
 
 ## License
-Apache License 2.0
+[Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0)
