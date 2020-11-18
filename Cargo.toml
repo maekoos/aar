@@ -1,0 +1,16 @@
+[package]
+name = "aar"
+version = "0.1.0"
+authors = ["Markus Stensiö <markus.stensio@gmail.com>"]
+edition = "2018"
+
+[lib]
+crate-type = ["lib"]
+
+
+[dependencies]
+dex = "0.4"
+memmap = "0"
+ux = "0.1"
+log = "0.4"
+env_logger = "0.8"

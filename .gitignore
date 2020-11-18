@@ -1,0 +1,13 @@
+/target
+**/*.rs.bk
+
+path.sh
+
+# /out/main.c
+/out/out.c
+/out/out.h
+*.o
+*.app
+*.dex
+*.dedexed
+*.class
