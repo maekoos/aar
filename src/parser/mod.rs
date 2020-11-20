@@ -125,8 +125,9 @@ pub enum ASTI {
   IfEq(u4, u4, usize),
   MoveResult(usize, u8),
   InvokeVirtual(Invoke),
-  InvokeDirect(Invoke),
   InvokeSuper(Invoke),
+  InvokeDirect(Invoke),
+  InvokeStatic(Invoke),
 }
 
 impl ASTI {
@@ -141,8 +142,9 @@ impl ASTI {
       ASTI::IfEq(_, _, _) => 4,
       ASTI::MoveResult(_, _) => 2,
       ASTI::InvokeVirtual(_) => 6,
-      ASTI::InvokeDirect(_) => 6,
       ASTI::InvokeSuper(_) => 6,
+      ASTI::InvokeDirect(_) => 6,
+      ASTI::InvokeStatic(_) => 6,
     }
   }
 }
@@ -294,6 +296,20 @@ impl ASTMethod {
               result_idx += 1;
               asti[i] = ASTI::InvokeVirtual((result_idx, b.0, b.1, b.2, b.3, b.4));
             }
+            ASTI::Instruction(ASTInstruction::InvokeSuper(a)) => {
+              let b = parse_invoke(
+                d,
+                a.0 as u64,
+                a.1.into(),
+                a.2.into(),
+                a.3.into(),
+                a.4.into(),
+                a.5.into(),
+                a.6.into(),
+              );
+              result_idx += 1;
+              asti[i] = ASTI::InvokeSuper((result_idx, b.0, b.1, b.2, b.3, b.4));
+            }
             ASTI::Instruction(ASTInstruction::InvokeDirect(a)) => {
               let b = parse_invoke(
                 d,
@@ -309,7 +325,7 @@ impl ASTMethod {
               result_idx += 1;
               asti[i] = ASTI::InvokeDirect((result_idx, b.0, b.1, b.2, b.3, b.4));
             }
-            ASTI::Instruction(ASTInstruction::InvokeSuper(a)) => {
+            ASTI::Instruction(ASTInstruction::InvokeStatic(a)) => {
               let b = parse_invoke(
                 d,
                 a.0 as u64,
@@ -322,7 +338,7 @@ impl ASTMethod {
               );
 
               result_idx += 1;
-              asti[i] = ASTI::InvokeSuper((result_idx, b.0, b.1, b.2, b.3, b.4));
+              asti[i] = ASTI::InvokeStatic((result_idx, b.0, b.1, b.2, b.3, b.4));
             }
             _ => {}
           }

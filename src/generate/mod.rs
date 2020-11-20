@@ -1,6 +1,7 @@
-use crate::parser::{ASTClass, ASTInstruction, ASTMethod, AccessFlags, ASTI};
+use log::{debug, info};
 
 mod generator;
+use crate::parser::{ASTClass, ASTInstruction, ASTMethod, AccessFlags, ASTI};
 pub use generator::Generator;
 
 static LIBRUNTIME_IMPORT_PATH: &str = r#""../libruntime/libruntime.h""#;
@@ -55,6 +56,7 @@ fn type_str_to_c(type_str: &str) -> String {
     "J" => format!("long"),
     "F" => format!("float"),
     "D" => format!("double"),
+    "L" => format!("/* not_implementet L*/"),
     ty => unimplemented!("Type: {}", ty),
   }
 }
@@ -117,6 +119,14 @@ fn generate_method(
   g.h
     .writeln(&format!("// Method Params(excl this): {:?}", m.params));
 
+  if m.access_flags.contains(AccessFlags::ABSTRACT) {
+    //? Is skipping abstract CLASSES possible? Or do we need to be able to copy the contents of the non-abstract class's methods and properties?
+    // We should be able to just skip any abstract methods, according to the java documentation:
+    // https://docs.oracle.com/javase/tutorial/java/IandI/abstract.html#PageContent:~:text=When%20an%20abstract%20class%20is%20subclassed%2C,subclass%20must%20also%20be%20declared%20abstract.
+    debug!("Skipping abstract method: {}", m.name);
+    return Ok(());
+  }
+
   let params_reg_0 = if m.access_flags.contains(AccessFlags::STATIC) {
     g.h.writeln("// Static");
     m.registers - m.params.len()
@@ -150,13 +160,8 @@ fn generate_method(
   g.c.writeln(&format!("void* allocs[{}];", 10));
 
   g.c.writeln(&format!("int32_t v[{}];", m.registers));
-  // let this_reg = m.registers - m.params.len() - 1;
-  // pointer_registers.insert(this_reg);
-  // ^ If the pointer is a parameter, it's owned by the caller
-  // and thus can be treated as any other parameter
 
   for v in m.registers - m.params.len()..m.registers {
-    // Pointer registers are owned by the caller, thus needs no special treatment
     g.c.writeln(&format!("v[{ri}] = p{ri};", ri = v));
   }
 
@@ -380,6 +385,20 @@ fn generate_instruction(
         param_regs = param_regs,
       ));
     }
+    ASTI::InvokeSuper((res_idx, shorty, class_id, name, param_count, param_regs)) => {
+      let res_var = gen_res_var(&shorty, &res_idx);
+      let params = gen_params(param_count, param_regs);
+
+      g.c.writeln(&format!(
+        "{res_var}CLASS_{class_id}__{name}({params}); // InvokeSuper {name} {p_count}: {param_regs:?}",
+        res_var = res_var,
+        class_id = class_id,
+        name = friendlyize_name(&name),
+        params = params.join(", "),
+        p_count = param_count,
+        param_regs = param_regs,
+      ));
+    }
     ASTI::InvokeDirect((res_idx, shorty, class_id, name, param_count, param_regs)) => {
       let res_var = gen_res_var(&shorty, &res_idx);
       let params = gen_params(param_count, param_regs);
@@ -394,12 +413,17 @@ fn generate_instruction(
         param_regs = param_regs,
       ));
     }
-    ASTI::InvokeSuper((res_idx, shorty, class_id, name, param_count, param_regs)) => {
+    ASTI::InvokeStatic((res_idx, shorty, class_id, name, param_count, param_regs)) => {
       let res_var = gen_res_var(&shorty, &res_idx);
-      let params = gen_params(param_count, param_regs);
+      // let params = gen_params(param_count, param_regs);
+
+      let mut params = Vec::new();
+      for i in 0..*param_count {
+        params.push(format!("v[{:?}]", param_regs[i as usize]));
+      }
 
       g.c.writeln(&format!(
-        "{res_var}CLASS_{class_id}__{name}({params}); // InvokeSuper {name} {p_count}: {param_regs:?}",
+        "{res_var}CLASS_{class_id}__{name}({params}); // InvokeStatic {name} {p_count}: {param_regs:?}",
         res_var = res_var,
         class_id = class_id,
         name = friendlyize_name(&name),
@@ -424,7 +448,7 @@ fn gen_res_var(shorty: &str, res_idx: &usize) -> String {
 }
 
 fn gen_params(param_count: &u8, param_regs: &[u8; 5]) -> Vec<String> {
-  //? Should the first parameter always be treated as an instance/pointer?
+  //? Should the first parameter always be treated as an instance/pointer? - no (static methods)
   let mut params = Vec::new();
   params.push(format!("allocs[v[{param_1}]]", param_1 = param_regs[0]));
 
