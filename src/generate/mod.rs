@@ -1,4 +1,4 @@
-use log::{debug, info};
+use log::debug;
 
 mod generator;
 use crate::parser::{ASTClass, ASTInstruction, ASTMethod, AccessFlags, ASTI};
@@ -95,9 +95,7 @@ pub fn generate_class(
 }
 
 fn friendlyize_name(s: &str) -> String {
-  s.replace("<init>", "__constructor")
-    .replace("<", "_")
-    .replace(">", "_")
+  s.replace("<", "__").replace(">", "_")
 }
 
 fn generate_params(params: &Vec<String>, reg_0: usize) -> String {
@@ -161,8 +159,15 @@ fn generate_method(
 
   g.c.writeln(&format!("int32_t v[{}];", m.registers));
 
-  for v in m.registers - m.params.len()..m.registers {
-    g.c.writeln(&format!("v[{ri}] = p{ri};", ri = v));
+  for v in params_reg_0..m.registers {
+    //todo: Better pointer checking (compile-time checking?)
+    // g.c.writeln(&format!("v[{ri}] = p{ri};", ri = v));
+    g.c.writeln(&format!("if (sizeof(p{ri}) == 8) {{", ri = v));
+    g.c.indentation_incr();
+    g.c.writeln(&format!("allocs[alloc_idx] = p{ri};", ri = v));
+    g.c.writeln(&format!("v[{ri}] = alloc_idx++;", ri = v));
+    g.c.indentation_decr();
+    g.c.writeln(&format!("}} else v[{ri}] = p{ri};", ri = v));
   }
 
   for (i, ins) in m.body.iter().enumerate() {
