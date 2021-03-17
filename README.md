@@ -4,7 +4,7 @@
 ## Current state
 AAR is currently just a proof of concept. It's able to run some DEX-files, although with a very limited set of features. It can, for example, not handle static functions and only supports a very small portion of the DEX instruction set.
 
-In the future, AAR will hopefully be able to run apps on desktop computers as well as mobile devices (and maybe even on the web), in a way which protects the users privacy and lets them view and control exactly what information they share with the application.
+no longer under active development ~~In the future, AAR will hopefully be able to run apps on desktop computers as well as mobile devices (and maybe even on the web), in a way which protects the users privacy and lets them view and control exactly what information they share with the application.~~
 
 ## Try it yourself!
 ### Dependencies
