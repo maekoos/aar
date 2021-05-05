@@ -1,4 +1,12 @@
 #!/usr/bin/python3
+
+"""
+Generate ../generated.rs
+-------------------------
+
+TODO: Use build.rs instead?
+"""
+
 import re
 
 
@@ -108,7 +116,7 @@ def generate_pub_enum(ops, enum_name="ASTInstruction"):
 
 
 def generate_pub_parser_fn(ops, fn_name="parse_instruction"):
-    fn = ["//todo Praser fn"]
+    fn = []
 
     fn.append("let op_code = q.incr()?;")
 
@@ -154,7 +162,7 @@ def generate_length_fn(ops):
     fn = []
     for o in ops:
         op = ops[o]
-        oplen = int(op.format[0]) * 2
+        oplen = int(op.format[0])
         fn.append('ASTInstruction::' + format_name_enum(op.name) + '(_) => ' +
                   str(oplen) + ',')
 

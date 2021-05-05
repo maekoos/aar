@@ -1,14 +1,12 @@
-/target
+.vscode
+
+debug/
+target/
 **/*.rs.bk
 
-path.sh
+/out
+!/out/Makefile
 
-# /out/main.c
-/out/out.c
-/out/out.h
-*.o
-*.a
-*.app
 *.dex
 *.dedexed
 *.class

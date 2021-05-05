@@ -1,32 +1,24 @@
-// import java.lang.Math;
+class MyCode {
+  public static void main(String[] args) {
+    int a = 10;
+    try {
+      a /= 0;
+      int c = 100;
+      System.out.println(c);
+    } catch(ArithmeticException err) {
+      System.out.println("Caught exception ;)");
+      System.out.println(err); // java.lang.ArithmeticException: / by zero
+    }
 
-public class MyCode extends Code {  
-  int b = 10;
-  
-  private int getMax2(int a) {
-    // int b = this.r123();
-    // int c = this.r123();
-    //todo: System.out.println("Hello world!");
+    try {
+      int b = a % 0;
+    } catch(ArithmeticException err) {
+      System.out.println("err");
+      System.out.println(err);
+    } catch(ArrayIndexOutOfBoundsException err) {
+      System.out.println("Java index exception");
+    }
 
-    // int[] myNums = {1, 10, 20, 30, 40};
-
-    Code c = new Code();
-    // int myNum0 = c.r123(this.a, 2, 3, 4);
-    // int myNum1 = c.test(this.b);
-    
-    
-    return this.a + this.b + c.a;
-  }
-}
-
-class Code {
-  int a = 5;
-  
-  public int r123(int a, int b, int c, int d) {
-    return a + b + c + d;
-  }
-
-  public static int test(int a) {
-    return a + a;
+    System.out.println(a);
   }
 }

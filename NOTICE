@@ -1,10 +1,6 @@
 Alternative APK Runtime
 Copyright 2020 Markus Stensiö
 
-The libruntime subdirectory of this project contains modified
-versions of files from the Couchbase Inc. libcouchbase
-library (https://github.com/couchbase/libcouchbase).
-
 The DEX parser generator contains a txt file from the
 Android Open Source Project (https://android.googlesource.com/)
 for which the following notice applies:

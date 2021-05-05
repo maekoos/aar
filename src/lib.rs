@@ -1,33 +1,29 @@
-use dex::Dex;
+use dexparser::DexFile;
 use log::{debug, info};
-use memmap::Mmap;
 
-pub mod generate;
-pub mod parser;
+pub mod codegen;
+mod parser;
+mod std_env;
 
-pub fn parse_and_generate(input: &Dex<Mmap>) -> (String, String) {
-  info!("Parsing dex input");
-  let mut classes = vec![];
-  for class in input.classes() {
-    let class = class.expect("Class failed");
-    debug!(
-      "Parsing class: {}",
-      class.jtype().type_descriptor().to_string(),
-    );
+use codegen::Module;
 
-    let c = parser::ASTClass::parse(&class, &input).unwrap();
-    classes.push(c);
-  }
+/// Takes a reference to a DexFile as input and spits out a module, ready to be used.
+pub fn process(input: &DexFile) -> Module {
+	info!("Parsing dex input");
 
-  info!("Generating c from dex input");
+	let mut module = Module::new("undexed".to_owned());
 
-  let mut g = generate::Generator::new();
-  generate::generate_boilerplate(&mut g);
-  generate::generate_definitions(&mut g, &input);
+	std_env::add_all(&mut module);
 
-  for mut c in classes {
-    generate::generate_class(&mut g, &mut c, &input).unwrap();
-  }
+	for class in &input.classes {
+		debug!("Generating class: {}", class.class_type);
+		parser::parse_class(&class, &input, &mut module).unwrap();
+	}
 
-  g.generate()
+	module
+}
+
+//TODO `process` but append to an already existing module (useful for parsing multiple dex files)
+pub fn process_and_append(_input: &DexFile, _module: &mut Module) {
+	unimplemented!();
 }

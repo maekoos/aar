@@ -65,7 +65,7 @@ pub struct IF22s(pub u4, pub u4, pub i16);
 #[derive(Debug, Clone)]
 pub struct IF22c(pub u4, pub u4, pub u16);
 #[derive(Debug, Clone)]
-pub struct IF22t(pub u4, pub u4, pub i16);
+pub struct IF22t(pub u4, pub u4, pub u16);
 #[derive(Debug, Clone)]
 pub struct IF35c(pub u16, pub u4, pub u4, pub u4, pub u4, pub u4, pub u4);
 #[derive(Debug, Clone)]
@@ -88,8 +88,9 @@ pub struct IF3rms(pub u16, pub u16, pub u8);
 pub struct IFPackedSwitch(pub u8, pub i32, pub Vec<i32>);
 #[derive(Debug, Clone)]
 pub struct IFSparseSwitch(pub u8, pub Vec<(i32, i32)>);
+/// Array_v, element size, data
 #[derive(Debug, Clone)]
-pub struct IFFillArrayData(pub u8, pub Vec<u8>);
+pub struct IFFillArrayData(pub u8, pub usize, pub Vec<u8>);
 
 macro_rules! instr_format {
   (10t, $q:expr) => {{
@@ -250,7 +251,7 @@ macro_rules! instr_format {
     let b1 = $q.incr()?;
     let b2 = $q.incr()?;
     let (a, b) = split_byte!(b0);
-    IF22t(a, b, join_bytes!(16, b1, b2) as i16)
+    IF22t(a, b, join_bytes!(16, b1, b2))
   }};
   (35c, $q:expr) => {{
     let b0 = $q.incr()?;
@@ -424,6 +425,6 @@ macro_rules! instr_format {
 
     $q.jmp_back()?;
 
-    IFFillArrayData(array_reference, data)
+    IFFillArrayData(array_reference, element_width as usize, data)
   }};
 }
